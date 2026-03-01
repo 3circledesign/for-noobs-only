@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ONENNABE — Setup Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Rajdhani:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-primary: #0a0a0f;
+    --bg-secondary: #12121a;
+    --bg-card: #16161f;
+    --accent: #00e5ff;
+    --accent-dim: #00e5ff33;
+    --accent-glow: #00e5ff66;
+    --accent-warm: #ff6b35;
+    --accent-green: #00ff88;
+    --accent-red: #ff3366;
+    --text-primary: #e8e8f0;
+    --text-secondary: #8888a0;
+    --text-dim: #55556a;
+    --border: #2a2a3a;
+    --border-accent: #00e5ff22;
+    --radius: 12px;
+    --font-display: 'Orbitron', sans-serif;
+    --font-body: 'Rajdhani', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: var(--font-body); background: var(--bg-primary);
+    color: var(--text-primary); min-height: 100vh;
+    overflow-x: hidden; font-size: 17px; line-height: 1.6;
+  }
+  .bg-grid {
+    position: fixed; inset: 0;
+    background-image: linear-gradient(var(--border-accent) 1px, transparent 1px), linear-gradient(90deg, var(--border-accent) 1px, transparent 1px);
+    background-size: 60px 60px; z-index: 0; opacity: 0.4;
+  }
+  .bg-glow { position: fixed; width: 600px; height: 600px; border-radius: 50%; filter: blur(150px); opacity: 0.15; z-index: 0; pointer-events: none; }
+  .bg-glow.g1 { top: -200px; left: -100px; background: var(--accent); }
+  .bg-glow.g2 { bottom: -200px; right: -100px; background: var(--accent-warm); }
+  .app { position: relative; z-index: 1; max-width: 860px; margin: 0 auto; padding: 40px 24px; min-height: 100vh; }
+
+  .header { text-align: center; margin-bottom: 48px; animation: fadeInDown .8s ease; }
+  .header .logo { font-family: var(--font-display); font-size: 2.2rem; font-weight: 900; letter-spacing: 6px; background: linear-gradient(135deg, var(--accent), #80f0ff, var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 8px; }
+  .header .sub { font-family: var(--font-mono); font-size: .8rem; color: var(--text-secondary); letter-spacing: 3px; text-transform: uppercase; }
+
+  .lang { position: fixed; top: 20px; right: 20px; z-index: 100; display: flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; background: var(--bg-card); box-shadow: 0 4px 20px rgba(0,0,0,.4); }
+  .lang button { font-family: var(--font-mono); font-size: .72rem; font-weight: 600; letter-spacing: 1.5px; padding: 10px 18px; border: none; cursor: pointer; color: var(--text-dim); background: transparent; transition: all .3s; text-transform: uppercase; }
+  .lang button.on { background: var(--accent); color: var(--bg-primary); }
+  .lang button:not(.on):hover { color: var(--accent); background: var(--accent-dim); }
+
+  .prog-wrap { margin-bottom: 40px; animation: fadeIn .6s ease .2s both; }
+  .prog { display: flex; align-items: center; justify-content: center; }
+  .prog-step { display: flex; flex-direction: column; align-items: center; z-index: 2; }
+  .dot { width: 36px; height: 36px; border-radius: 50%; border: 2px solid var(--border); background: var(--bg-secondary); display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); font-size: .75rem; font-weight: 600; color: var(--text-dim); transition: all .4s; }
+  .dot.active { border-color: var(--accent); background: var(--accent-dim); color: var(--accent); box-shadow: 0 0 20px var(--accent-dim); }
+  .dot.done { border-color: var(--accent-green); background: #00ff8822; color: var(--accent-green); }
+  .dot-label { font-size: .65rem; font-family: var(--font-mono); color: var(--text-dim); margin-top: 6px; letter-spacing: 1px; text-transform: uppercase; transition: color .3s; white-space: nowrap; }
+  .line { width: 50px; height: 2px; background: var(--border); margin: 0 4px; margin-bottom: 22px; transition: background .4s; }
+  .line.done { background: var(--accent-green); }
+
+  .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 48px 40px; position: relative; overflow: hidden; animation: slideUp .5s ease; }
+  .card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--accent), transparent); }
+  .tag { font-family: var(--font-mono); font-size: .7rem; color: var(--accent); letter-spacing: 3px; text-transform: uppercase; margin-bottom: 12px; opacity: .8; }
+  .ttl { font-family: var(--font-display); font-size: 1.5rem; font-weight: 700; margin-bottom: 24px; letter-spacing: 1px; line-height: 1.3; }
+  .body p { color: var(--text-secondary); margin-bottom: 16px; font-size: 1.05rem; }
+  .body strong { color: var(--text-primary); font-weight: 600; }
+  .body .hi { background: var(--accent-dim); border-left: 3px solid var(--accent); padding: 16px 20px; border-radius: 0 8px 8px 0; margin: 20px 0; font-family: var(--font-mono); font-size: .85rem; color: var(--accent); line-height: 1.7; }
+  .body .warn { background: #ff336615; border-left: 3px solid var(--accent-red); padding: 16px 20px; border-radius: 0 8px 8px 0; margin: 20px 0; color: #ff8899; font-size: .95rem; }
+  .body .danger { background: #ff000020; border: 2px solid var(--accent-red); padding: 20px 24px; border-radius: 10px; margin: 20px 0; color: #ff6680; font-size: 1rem; text-align: center; font-weight: 600; }
+  .body ul { list-style: none; padding: 0; margin: 16px 0; }
+  .body ul li { color: var(--text-secondary); padding: 8px 0 8px 28px; position: relative; font-size: 1rem; }
+  .body ul li::before { content: '▸'; position: absolute; left: 8px; color: var(--accent); font-size: .9rem; }
+
+  .nav { display: flex; justify-content: space-between; align-items: center; margin-top: 36px; gap: 16px; }
+  .btn { font-family: var(--font-display); font-size: .8rem; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; border: none; border-radius: 8px; padding: 14px 32px; cursor: pointer; transition: all .3s; position: relative; overflow: hidden; }
+  .btn-p { background: linear-gradient(135deg, var(--accent), #00b8d4); color: var(--bg-primary); box-shadow: 0 4px 20px var(--accent-dim); }
+  .btn-p:hover { transform: translateY(-2px); box-shadow: 0 6px 30px var(--accent-glow); }
+  .btn-s { background: transparent; color: var(--text-secondary); border: 1px solid var(--border); }
+  .btn-s:hover { border-color: var(--accent); color: var(--accent); }
+  .btn:disabled { opacity: .3; cursor: not-allowed; transform: none !important; }
+
+  .quiz { display: none; }
+  .qh { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; padding-bottom: 20px; border-bottom: 1px solid var(--border); }
+  .qh-text { font-family: var(--font-mono); font-size: .8rem; color: var(--text-secondary); letter-spacing: 1px; }
+  .qh-score { font-family: var(--font-mono); font-size: .8rem; color: var(--accent); letter-spacing: 1px; }
+  .qnum { font-family: var(--font-display); font-size: .75rem; color: var(--accent); letter-spacing: 3px; margin-bottom: 12px; }
+  .qtxt { font-size: 1.2rem; font-weight: 600; margin-bottom: 28px; line-height: 1.5; }
+  .opts { display: flex; flex-direction: column; gap: 12px; margin-bottom: 32px; }
+  .opt { display: flex; align-items: center; gap: 16px; width: 100%; padding: 16px 20px; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 10px; color: var(--text-primary); font-family: var(--font-body); font-size: 1rem; font-weight: 500; cursor: pointer; transition: all .25s; text-align: left; }
+  .opt:hover:not(:disabled) { border-color: var(--accent); background: var(--accent-dim); }
+  .opt .ol { width: 32px; height: 32px; border-radius: 8px; background: var(--bg-primary); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); font-size: .8rem; font-weight: 600; color: var(--text-dim); flex-shrink: 0; transition: all .25s; }
+  .opt:hover:not(:disabled) .ol { border-color: var(--accent); color: var(--accent); }
+  .opt.ok { border-color: var(--accent-green) !important; background: #00ff8815 !important; }
+  .opt.ok .ol { background: var(--accent-green) !important; color: var(--bg-primary) !important; border-color: var(--accent-green) !important; }
+  .opt.no { border-color: var(--accent-red) !important; background: #ff336615 !important; }
+  .opt.no .ol { background: var(--accent-red) !important; color: #fff !important; border-color: var(--accent-red) !important; }
+  .opt:disabled { cursor: default; }
+  .fb { padding: 12px 16px; border-radius: 8px; font-family: var(--font-mono); font-size: .85rem; margin-bottom: 20px; display: none; animation: fadeIn .3s; }
+  .fb.ok { display: block; background: #00ff8815; color: var(--accent-green); border: 1px solid #00ff8833; }
+  .fb.no { display: block; background: #ff336615; color: var(--accent-red); border: 1px solid #ff336633; }
+  .qbar { width: 100%; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; margin-top: 8px; }
+  .qbar-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-green)); border-radius: 2px; transition: width .5s; width: 0%; }
+
+  .res { display: none; }
+  .res-s { text-align: center; padding: 40px 0; }
+  .ring { width: 160px; height: 160px; margin: 0 auto 24px; position: relative; }
+  .ring svg { transform: rotate(-90deg); width: 160px; height: 160px; }
+  .ring circle { fill: none; stroke-width: 8; stroke-linecap: round; }
+  .ring .rb { stroke: var(--border); }
+  .ring .rf { stroke: var(--accent-green); stroke-dasharray: 440; stroke-dashoffset: 440; transition: stroke-dashoffset 1.5s ease; }
+  .ring .rf.fail { stroke: var(--accent-red); }
+  .sv { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); font-family: var(--font-display); font-size: 2.5rem; font-weight: 900; }
+  .sv small { font-size: 1rem; color: var(--text-dim); font-weight: 400; }
+  .rmsg { font-family: var(--font-display); font-size: 1.1rem; font-weight: 600; letter-spacing: 2px; text-align: center; margin-bottom: 12px; }
+  .rdesc { color: var(--text-secondary); text-align: center; font-size: 1rem; margin-bottom: 36px; }
+  .dl-box { text-align: center; padding: 32px; background: #00ff8808; border: 1px dashed #00ff8844; border-radius: var(--radius); margin-bottom: 24px; }
+  .dl-box .ico { font-size: 2.5rem; margin-bottom: 12px; }
+  .dl-link { display: inline-flex; align-items: center; gap: 10px; font-family: var(--font-display); font-size: .85rem; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; background: linear-gradient(135deg, var(--accent-green), #00cc6a); color: var(--bg-primary); text-decoration: none; padding: 16px 40px; border-radius: 8px; transition: all .3s; box-shadow: 0 4px 20px #00ff8833; }
+  .dl-link:hover { transform: translateY(-2px); box-shadow: 0 6px 30px #00ff8855; }
+  .fail-box { text-align: center; padding: 32px; background: #ff336610; border: 1px dashed #ff336644; border-radius: var(--radius); margin-bottom: 24px; }
+
+  .hidden { display: none !important; }
+  @keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
+  @keyframes fadeInDown { from { opacity: 0; transform: translateY(-20px) } to { opacity: 1; transform: translateY(0) } }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(30px) } to { opacity: 1; transform: translateY(0) } }
+  @media (max-width: 640px) {
+    .app { padding: 24px 16px; } .card { padding: 32px 24px; }
+    .header .logo { font-size: 1.6rem; letter-spacing: 4px; }
+    .line { width: 24px; } .dot-label { font-size: .55rem; } .dot { width: 30px; height: 30px; font-size: .65rem; }
+    .nav { flex-direction: column; } .nav .btn { width: 100%; text-align: center; }
+    .lang { top: 12px; right: 12px; } .lang button { padding: 8px 14px; font-size: .65rem; }
+  }
+  ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-track { background: var(--bg-primary); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+<div class="bg-grid"></div>
+<div class="bg-glow g1"></div>
+<div class="bg-glow g2"></div>
+
+<div class="lang">
+  <button class="on" id="lEN" onclick="setLang('en')">EN</button>
+  <button id="lBM" onclick="setLang('bm')">BM</button>
+</div>
+
+<div class="app">
+  <div class="header">
+    <div class="logo">ONENNABE</div>
+    <div class="sub" id="hSub"></div>
+  </div>
+  <div class="prog-wrap" id="progWrap"><div class="prog" id="prog"></div></div>
+
+  <div id="tutSec">
+    <div class="card" id="pCard">
+      <div class="tag" id="pTag"></div>
+      <h2 class="ttl" id="pTtl"></h2>
+      <div class="body" id="pBody"></div>
+      <div class="nav">
+        <button class="btn btn-s" id="bPrev" onclick="prevPage()"></button>
+        <button class="btn btn-p" id="bNext" onclick="nextPage()"></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="quiz" id="qSec">
+    <div class="card">
+      <div class="qh">
+        <div>
+          <div class="qh-text" id="qProg"></div>
+          <div class="qbar"><div class="qbar-fill" id="qBar"></div></div>
+        </div>
+        <div class="qh-score" id="qScore"></div>
+      </div>
+      <div id="qArea">
+        <div class="qnum" id="qNum"></div>
+        <div class="qtxt" id="qTxt"></div>
+        <div class="opts" id="qOpts"></div>
+        <div class="fb" id="qFb"></div>
+      </div>
+      <div class="nav"><div></div>
+        <button class="btn btn-p hidden" id="bNextQ" onclick="nextQ()"></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="res" id="rSec">
+    <div class="card">
+      <div class="res-s">
+        <div class="ring">
+          <svg viewBox="0 0 160 160"><circle class="rb" cx="80" cy="80" r="70"/><circle class="rf" id="rFill" cx="80" cy="80" r="70"/></svg>
+          <div class="sv"><span id="rScore">0</span><small>/10</small></div>
+        </div>
+        <div class="rmsg" id="rMsg"></div>
+        <div class="rdesc" id="rDesc"></div>
+      </div>
+      <div class="dl-box hidden" id="dlBox">
+        <div class="ico">⬇</div>
+        <p id="dlLabel" style="color:var(--accent-green);margin-bottom:16px;font-family:var(--font-mono);font-size:.8rem;letter-spacing:2px"></p>
+        <a href="#" class="dl-link" id="dlBtn" download></a>
+      </div>
+      <div class="fail-box hidden" id="failBox">
+        <p id="failLabel" style="color:var(--accent-red);margin-bottom:16px;font-family:var(--font-mono);font-size:.8rem;letter-spacing:2px"></p>
+        <p id="failDesc" style="color:var(--text-secondary);margin-bottom:20px"></p>
+        <button class="btn btn-p" id="retryBtn" onclick="resetAll()"></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const C = {
+  pass: 8,
+  dlURL: "https://github.com/YOUR_USERNAME/YOUR_REPO/releases/latest/download/YOUR_FILE.zip",
+
+  ui: {
+    en: {
+      sub:"Setup & Installation Guide", back:"◂ BACK", next:"NEXT ▸", startQ:"START QUIZ ▸",
+      nextQ:"NEXT QUESTION ▸", viewR:"VIEW RESULTS ▸",
+      qOf:(a,b)=>`QUESTION ${a} / ${b}`, qN:n=>`QUESTION ${String(n).padStart(2,'0')}`,
+      sc:s=>`SCORE: ${s}`, ok:"✓ Correct!", no:a=>`✗ Incorrect. The correct answer is: ${a}`,
+      granted:"ACCESS GRANTED", denied:"ACCESS DENIED",
+      passD:(s,t)=>`You scored ${s}/${t}. The download link is now available.`,
+      failD:(s,t,p)=>`You scored ${s}/${t}. You need at least ${p} correct answers.`,
+      dlOpen:"DOWNLOAD UNLOCKED", dlLock:"DOWNLOAD LOCKED", dlBtn:"⬇ DOWNLOAD ONENNABE",
+      failMore:p=>`You need at least <strong style="color:var(--accent)">${p} correct answers</strong> to unlock the download. Please review the tutorial and try again.`,
+      retry:"↺ RETRY FROM START", sL:i=>`Step ${i}`, qL:"Quiz"
+    },
+    bm: {
+      sub:"Panduan Pemasangan & Persediaan", back:"◂ KEMBALI", next:"SETERUSNYA ▸", startQ:"MULA KUIZ ▸",
+      nextQ:"SOALAN SETERUSNYA ▸", viewR:"LIHAT KEPUTUSAN ▸",
+      qOf:(a,b)=>`SOALAN ${a} / ${b}`, qN:n=>`SOALAN ${String(n).padStart(2,'0')}`,
+      sc:s=>`MARKAH: ${s}`, ok:"✓ Betul!", no:a=>`✗ Salah. Jawapan yang betul ialah: ${a}`,
+      granted:"AKSES DILULUSKAN", denied:"AKSES DITOLAK",
+      passD:(s,t)=>`Anda mendapat ${s}/${t}. Pautan muat turun kini tersedia.`,
+      failD:(s,t,p)=>`Anda mendapat ${s}/${t}. Anda memerlukan sekurang-kurangnya ${p} jawapan betul.`,
+      dlOpen:"MUAT TURUN DIBUKA", dlLock:"MUAT TURUN DIKUNCI", dlBtn:"⬇ MUAT TURUN ONENNABE",
+      failMore:p=>`Anda memerlukan sekurang-kurangnya <strong style="color:var(--accent)">${p} jawapan betul</strong> untuk membuka muat turun. Sila baca semula tutorial dan cuba lagi.`,
+      retry:"↺ CUBA SEMULA", sL:i=>`Langkah ${i}`, qL:"Kuiz"
+    }
+  },
+
+  // =============================================
+  //  TUTORIAL PAGES
+  // =============================================
+  pages: {
+    en: [
+      // PAGE 1 — What is Denuvo & Game Bypass
+      { tag:"Step 1 of 5", title:"What is Denuvo & Game Bypass", content:`
+        <p><strong>Denuvo</strong> is an anti-tamper protection used by major game publishers to prevent unauthorized access to their games. Games from publishers like <strong>Ubisoft, Rockstar, and the COD series (Activision)</strong> often use Denuvo or similar protection.</p>
+        <p>ONENNABE allows you to <strong>bypass and unlock</strong> these protected games through a legitimate Steam-based unlocking system. This includes:</p>
+        <ul>
+          <li><strong>Ubisoft games</strong> — Assassin's Creed, Far Cry, etc.</li>
+          <li><strong>Rockstar games</strong> — GTA, Red Dead Redemption, etc.</li>
+          <li><strong>COD series</strong> — Call of Duty titles from Activision</li>
+          <li><strong>Other Denuvo-protected titles</strong></li>
+        </ul>
+        <div class="hi">ℹ Denuvo games require a special process — you will need to wait for "parcel arrival" or borrow an account from your seller. More details in Step 4.</div>
+        <p>Each game on Steam has a unique <strong>Game AppID</strong> — this is the identification number Steam uses to recognize each game. ONENNABE uses these AppIDs to manage your game library and unlock access.</p>
+        <div class="hi">ℹ Example: Counter-Strike 2 has AppID <strong>730</strong>, GTA V has AppID <strong>271590</strong>. You can find any game's AppID on the Steam store page URL.</div>
+      `},
+
+      // PAGE 2 — Requirements (MUST READ)
+      { tag:"Step 2 of 5", title:"Requirements — READ BEFORE BUYING", content:`
+        <p>Before purchasing ONENNABE, make sure you meet <strong>ALL</strong> of the following requirements. There are <strong>NO REFUNDS</strong> if you buy without meeting these requirements:</p>
+        <div class="danger">🚫 NO STEAM = DON'T BUY<br>🚫 NO PC = DON'T BUY<br>🚫 NON-WINDOWS OS = DON'T BUY</div>
+        <p>You <strong>MUST</strong> have the following:</p>
+        <ul>
+          <li><strong>A Windows PC</strong> — Desktop or Laptop running Windows 10/11 (64-bit). Mac, Linux, mobile phones, and consoles are NOT supported.</li>
+          <li><strong>Steam installed and logged in</strong> — You must have a Steam account and the Steam client must be installed and running on your PC.</li>
+          <li><strong>Stable internet connection</strong> — Required for Steam and for activating your CD key.</li>
+        </ul>
+        <div class="warn">⚠ <strong>IMPORTANT:</strong> ONENNABE only works on Windows PC with Steam. If you are using a Mac, Chromebook, phone, PlayStation, Xbox, or Nintendo Switch — this software is NOT for you. Do NOT buy.</div>
+        <p>If you are unsure whether your device is compatible, <strong>ask your seller FIRST</strong> before purchasing.</p>
+      `},
+
+      // PAGE 3 — Installation Steps
+      { tag:"Step 3 of 5", title:"Installation Steps", content:`
+        <p>Follow these steps <strong>in the correct order</strong>. Doing them out of order will cause problems:</p>
+        <ul>
+          <li><strong>Step 1:</strong> Install <strong>Steam</strong> and log in to your Steam account</li>
+          <li><strong>Step 2:</strong> Download <strong>Steam Fix</strong> and install it — this must be installed AFTER Steam but BEFORE ONENNABE</li>
+          <li><strong>Step 3:</strong> Download and install <strong>ONENNABE</strong> (Steam Unlock)</li>
+          <li><strong>Step 4:</strong> Get your <strong>CD Key</strong> from your seller</li>
+          <li><strong>Step 5:</strong> Launch ONENNABE and enter your CD Key to activate</li>
+        </ul>
+        <div class="hi">ℹ INSTALLATION ORDER:<br>① Steam → ② Steam Fix → ③ ONENNABE<br><br>Do NOT skip Steam Fix! It is required for the unlock to work properly.</div>
+        <div class="warn">⚠ <strong>Disable your antivirus</strong> temporarily during installation. Steam Fix and ONENNABE may be flagged as false positives. Add them to your antivirus exclusion list after installation.</div>
+      `},
+
+      // PAGE 4 — CD Key & Playing Denuvo Games
+      { tag:"Step 4 of 5", title:"CD Key & Playing Denuvo Games", content:`
+        <p>After installation, you need a <strong>CD Key</strong> to activate ONENNABE. Get your CD Key from your seller — the person/shop where you purchased the software.</p>
+        <div class="hi">ℹ Your CD Key is unique to you. Enter it exactly as provided — it is case-sensitive. Do not share your key with anyone.</div>
+        <p><strong>For Denuvo-protected games</strong> (Ubisoft, Rockstar, COD, etc.), there is an extra step:</p>
+        <ul>
+          <li><strong>TikTok buyers:</strong> Your "parcel" must arrive first before you can play Denuvo games. Wait for the parcel delivery notification.</li>
+          <li><strong>You may need to borrow an account</strong> from your seller to play Denuvo games. Contact your seller to arrange this.</li>
+          <li><strong>Chat with your seller</strong> through the platform where you bought the software — TikTok, Shopee, or wherever you purchased it.</li>
+        </ul>
+        <div class="warn">⚠ <strong>For Denuvo games:</strong> Do NOT expect to play immediately after installing. You must coordinate with your seller first. Contact them via TikTok chat, Shopee chat, or whichever platform you used to buy.</div>
+      `},
+
+      // PAGE 5 — Troubleshooting
+      { tag:"Step 5 of 5", title:"Troubleshooting & FAQ", content:`
+        <p>Here are solutions to the most common issues:</p>
+        <ul>
+          <li><strong>"Game turned back to Purchase/Buy":</strong> Download <strong>Steam Fix</strong> again, reinstall it, and <strong>restart your PC</strong>. This usually fixes the issue.</li>
+          <li><strong>"CD Key not working":</strong> Double-check for typos. Keys are case-sensitive. Contact your seller if the problem persists.</li>
+          <li><strong>"Can't play Denuvo game":</strong> Make sure your parcel has arrived (TikTok buyers) or that you have borrowed the account from your seller.</li>
+          <li><strong>"Steam Fix flagged by antivirus":</strong> Add Steam Fix to your antivirus exclusion list. It is a false positive.</li>
+          <li><strong>"Application won't start":</strong> Run as Administrator. Make sure Steam is running and you are logged in.</li>
+        </ul>
+        <div class="hi">ℹ GAME TURNED BACK TO "PURCHASE"?<br>→ Download Steam Fix<br>→ Install Steam Fix<br>→ Restart your PC<br>→ Problem solved!</div>
+        <p>For any other issues, <strong>contact your seller</strong> through the platform where you purchased (TikTok, Shopee, etc.) or join the Discord support server.</p>
+        <p>You have now completed the tutorial! Click <strong>Next</strong> to begin the quiz. You need at least <strong>8 out of 10 correct answers</strong> to unlock the download.</p>
+        <p><strong>Good luck!</strong></p>
+      `}
+    ],
+    bm: [
+      // PAGE 1
+      { tag:"Langkah 1 daripada 5", title:"Apa itu Denuvo & Game Bypass", content:`
+        <p><strong>Denuvo</strong> ialah perlindungan anti-tamper yang digunakan oleh penerbit permainan utama untuk menghalang akses tanpa kebenaran kepada permainan mereka. Permainan daripada penerbit seperti <strong>Ubisoft, Rockstar, dan siri COD (Activision)</strong> sering menggunakan Denuvo atau perlindungan serupa.</p>
+        <p>ONENNABE membolehkan anda <strong>bypass dan membuka kunci</strong> permainan yang dilindungi ini melalui sistem pembukaan kunci berasaskan Steam. Ini termasuk:</p>
+        <ul>
+          <li><strong>Permainan Ubisoft</strong> — Assassin's Creed, Far Cry, dll.</li>
+          <li><strong>Permainan Rockstar</strong> — GTA, Red Dead Redemption, dll.</li>
+          <li><strong>Siri COD</strong> — Tajuk Call of Duty dari Activision</li>
+          <li><strong>Tajuk lain yang dilindungi Denuvo</strong></li>
+        </ul>
+        <div class="hi">ℹ Permainan Denuvo memerlukan proses khas — anda perlu menunggu "parcel sampai" atau pinjam akaun daripada seller. Butiran lanjut di Langkah 4.</div>
+        <p>Setiap permainan di Steam mempunyai <strong>Game AppID</strong> yang unik — ini ialah nombor pengenalan yang Steam gunakan untuk mengenal pasti setiap permainan. ONENNABE menggunakan AppID ini untuk mengurus pustaka permainan anda.</p>
+        <div class="hi">ℹ Contoh: Counter-Strike 2 mempunyai AppID <strong>730</strong>, GTA V mempunyai AppID <strong>271590</strong>. Anda boleh cari AppID mana-mana permainan di URL halaman Steam Store.</div>
+      `},
+
+      // PAGE 2
+      { tag:"Langkah 2 daripada 5", title:"Keperluan — BACA SEBELUM BELI", content:`
+        <p>Sebelum membeli ONENNABE, pastikan anda memenuhi <strong>SEMUA</strong> keperluan berikut. <strong>TIADA REFUND</strong> jika anda beli tanpa memenuhi keperluan ini:</p>
+        <div class="danger">🚫 TAKDE STEAM = JANGAN BELI<br>🚫 TAKDE PC = JANGAN BELI<br>🚫 BUKAN WINDOWS OS = JANGAN BELI</div>
+        <p>Anda <strong>MESTI</strong> ada yang berikut:</p>
+        <ul>
+          <li><strong>PC Windows</strong> — Desktop atau Laptop yang menjalankan Windows 10/11 (64-bit). Mac, Linux, telefon bimbit, dan konsol TIDAK disokong.</li>
+          <li><strong>Steam dipasang dan dilog masuk</strong> — Anda mesti mempunyai akaun Steam dan Steam client mesti dipasang dan berjalan di PC anda.</li>
+          <li><strong>Sambungan internet yang stabil</strong> — Diperlukan untuk Steam dan untuk mengaktifkan CD key anda.</li>
+        </ul>
+        <div class="warn">⚠ <strong>PENTING:</strong> ONENNABE hanya berfungsi pada Windows PC dengan Steam. Jika anda menggunakan Mac, Chromebook, telefon, PlayStation, Xbox, atau Nintendo Switch — software ini BUKAN untuk anda. JANGAN BELI.</div>
+        <p>Jika anda tidak pasti sama ada peranti anda serasi, <strong>tanya seller anda DULU</strong> sebelum membeli.</p>
+      `},
+
+      // PAGE 3
+      { tag:"Langkah 3 daripada 5", title:"Langkah Pemasangan", content:`
+        <p>Ikuti langkah-langkah ini <strong>mengikut susunan yang betul</strong>. Jika tidak ikut susunan, akan ada masalah:</p>
+        <ul>
+          <li><strong>Langkah 1:</strong> Pasang <strong>Steam</strong> dan log masuk ke akaun Steam anda</li>
+          <li><strong>Langkah 2:</strong> Muat turun <strong>Steam Fix</strong> dan pasang — ini mesti dipasang SELEPAS Steam tetapi SEBELUM ONENNABE</li>
+          <li><strong>Langkah 3:</strong> Muat turun dan pasang <strong>ONENNABE</strong> (Steam Unlock)</li>
+          <li><strong>Langkah 4:</strong> Dapatkan <strong>CD Key</strong> anda daripada seller</li>
+          <li><strong>Langkah 5:</strong> Lancarkan ONENNABE dan masukkan CD Key anda untuk aktifkan</li>
+        </ul>
+        <div class="hi">ℹ SUSUNAN PEMASANGAN:<br>① Steam → ② Steam Fix → ③ ONENNABE<br><br>JANGAN skip Steam Fix! Ia diperlukan untuk unlock berfungsi dengan betul.</div>
+        <div class="warn">⚠ <strong>Matikan antivirus</strong> anda buat sementara waktu semasa pemasangan. Steam Fix dan ONENNABE mungkin dikesan sebagai false positive. Tambah ke senarai pengecualian antivirus selepas pemasangan.</div>
+      `},
+
+      // PAGE 4
+      { tag:"Langkah 4 daripada 5", title:"CD Key & Main Permainan Denuvo", content:`
+        <p>Selepas pemasangan, anda memerlukan <strong>CD Key</strong> untuk mengaktifkan ONENNABE. Dapatkan CD Key anda daripada seller — orang/kedai di mana anda membeli software.</p>
+        <div class="hi">ℹ CD Key anda adalah unik. Masukkan dengan tepat seperti yang diberikan — ia sensitif huruf besar/kecil. Jangan kongsi key anda dengan sesiapa.</div>
+        <p><strong>Untuk permainan Denuvo</strong> (Ubisoft, Rockstar, COD, dll.), ada langkah tambahan:</p>
+        <ul>
+          <li><strong>Pembeli TikTok:</strong> "Parcel" anda mesti sampai dulu sebelum boleh main permainan Denuvo. Tunggu notifikasi penghantaran parcel.</li>
+          <li><strong>Anda mungkin perlu pinjam akaun</strong> daripada seller anda untuk main permainan Denuvo. Hubungi seller anda untuk aturkan ini.</li>
+          <li><strong>Chat dengan seller anda</strong> melalui platform di mana anda beli software — TikTok, Shopee, atau di mana sahaja anda membelinya.</li>
+        </ul>
+        <div class="warn">⚠ <strong>Untuk permainan Denuvo:</strong> JANGAN harap boleh main terus selepas install. Anda mesti koordinasi dengan seller anda dulu. Hubungi mereka melalui TikTok chat, Shopee chat, atau platform mana yang anda guna untuk beli.</div>
+      `},
+
+      // PAGE 5
+      { tag:"Langkah 5 daripada 5", title:"Penyelesaian Masalah & FAQ", content:`
+        <p>Berikut adalah penyelesaian untuk masalah yang paling biasa:</p>
+        <ul>
+          <li><strong>"Game bertukar balik ke Purchase/Buy":</strong> Muat turun <strong>Steam Fix</strong> semula, pasang semula, dan <strong>restart PC</strong> anda. Ini biasanya akan selesaikan masalah.</li>
+          <li><strong>"CD Key tidak berfungsi":</strong> Semak semula untuk kesilapan taip. Key sensitif huruf besar/kecil. Hubungi seller jika masalah berterusan.</li>
+          <li><strong>"Tak boleh main permainan Denuvo":</strong> Pastikan parcel anda telah sampai (pembeli TikTok) atau anda telah pinjam akaun daripada seller.</li>
+          <li><strong>"Steam Fix dikesan antivirus":</strong> Tambah Steam Fix ke senarai pengecualian antivirus anda. Ia adalah false positive.</li>
+          <li><strong>"Aplikasi tak boleh start":</strong> Run as Administrator. Pastikan Steam sedang berjalan dan anda telah log masuk.</li>
+        </ul>
+        <div class="hi">ℹ GAME BERTUKAR BALIK KE "PURCHASE"?<br>→ Muat turun Steam Fix<br>→ Pasang Steam Fix<br>→ Restart PC anda<br>→ Masalah selesai!</div>
+        <p>Untuk masalah lain, <strong>hubungi seller anda</strong> melalui platform di mana anda membeli (TikTok, Shopee, dll.) atau sertai pelayan Discord sokongan.</p>
+        <p>Anda telah melengkapkan tutorial! Klik <strong>Seterusnya</strong> untuk memulakan kuiz. Anda memerlukan sekurang-kurangnya <strong>8 daripada 10 jawapan betul</strong> untuk membuka muat turun.</p>
+        <p><strong>Semoga berjaya!</strong></p>
+      `}
+    ]
+  },
+
+  // =============================================
+  //  QUIZ QUESTIONS
+  // =============================================
+  questions: {
+    en: [
+      { q:"What is Denuvo?", o:["A type of game engine","Anti-tamper protection used by game publishers","A Steam plugin","A game genre"], a:1 },
+      { q:"Which of these is NOT a requirement to use ONENNABE?", o:["Windows PC","Steam installed and logged in","PlayStation or Xbox console","Stable internet connection"], a:2 },
+      { q:"What is the correct installation order?", o:["ONENNABE → Steam → Steam Fix","Steam Fix → ONENNABE → Steam","Steam → Steam Fix → ONENNABE","Steam → ONENNABE → Steam Fix"], a:2 },
+      { q:"What is a Game AppID?", o:["Your Steam password","A unique identification number for each game on Steam","A type of CD Key","Your seller's contact number"], a:1 },
+      { q:"What should you do if a game turns back to 'Purchase/Buy'?", o:["Buy the game again","Uninstall Steam completely","Download Steam Fix, install it, and restart your PC","Create a new Steam account"], a:2 },
+      { q:"What do you need to play Denuvo-protected games (e.g. Ubisoft, Rockstar, COD)?", o:["Just install ONENNABE and play immediately","Wait for parcel to arrive / borrow account from seller","Install a VPN","Buy the game on Steam"], a:1 },
+      { q:"Where do you get your CD Key from?", o:["Steam Store","ONENNABE website","Your seller (TikTok, Shopee, etc.)","Microsoft Store"], a:2 },
+      { q:"What must you do with your antivirus during installation?", o:["Keep it enabled at all times","Disable it temporarily and add exclusions after install","Uninstall it permanently","Switch to a different antivirus"], a:1 },
+      { q:"If you DON'T have Steam or a Windows PC, what should you do?", o:["Buy ONENNABE anyway","Use it on your phone instead","DO NOT buy — it won't work without Steam and Windows PC","Install Steam on your console"], a:2 },
+      { q:"How should you contact your seller for Denuvo game support?", o:["Email Denuvo directly","Chat through the platform where you bought it (TikTok, Shopee, etc.)","Post on Reddit","Call Steam support"], a:1 }
+    ],
+    bm: [
+      { q:"Apa itu Denuvo?", o:["Sejenis game engine","Perlindungan anti-tamper yang digunakan oleh penerbit permainan","Plugin Steam","Genre permainan"], a:1 },
+      { q:"Yang mana BUKAN keperluan untuk guna ONENNABE?", o:["PC Windows","Steam dipasang dan dilog masuk","Konsol PlayStation atau Xbox","Sambungan internet yang stabil"], a:2 },
+      { q:"Apakah susunan pemasangan yang betul?", o:["ONENNABE → Steam → Steam Fix","Steam Fix → ONENNABE → Steam","Steam → Steam Fix → ONENNABE","Steam → ONENNABE → Steam Fix"], a:2 },
+      { q:"Apa itu Game AppID?", o:["Kata laluan Steam anda","Nombor pengenalan unik untuk setiap permainan di Steam","Sejenis CD Key","Nombor telefon seller anda"], a:1 },
+      { q:"Apa yang perlu dilakukan jika game bertukar balik ke 'Purchase/Buy'?", o:["Beli game tu semula","Nyahpasang Steam sepenuhnya","Muat turun Steam Fix, pasang semula, dan restart PC","Buat akaun Steam baru"], a:2 },
+      { q:"Apa yang diperlukan untuk main permainan Denuvo (cth. Ubisoft, Rockstar, COD)?", o:["Pasang ONENNABE dan main terus","Tunggu parcel sampai / pinjam akaun dari seller","Pasang VPN","Beli game di Steam"], a:1 },
+      { q:"Dari mana anda dapat CD Key?", o:["Steam Store","Laman web ONENNABE","Seller anda (TikTok, Shopee, dll.)","Microsoft Store"], a:2 },
+      { q:"Apa yang perlu dilakukan dengan antivirus semasa pemasangan?", o:["Biarkan aktif sepanjang masa","Matikan sementara dan tambah pengecualian selepas pasang","Nyahpasang secara kekal","Tukar kepada antivirus lain"], a:1 },
+      { q:"Jika anda TAKDE Steam atau PC Windows, apa yang patut anda buat?", o:["Beli ONENNABE je","Guna di telefon","JANGAN BELI — tak akan berfungsi tanpa Steam dan Windows PC","Pasang Steam di konsol"], a:2 },
+      { q:"Bagaimana nak hubungi seller untuk sokongan permainan Denuvo?", o:["Email Denuvo terus","Chat melalui platform di mana anda beli (TikTok, Shopee, dll.)","Post di Reddit","Hubungi Steam support"], a:1 }
+    ]
+  }
+};
+
+// STATE
+let lang='en', pg=0, qi=0, sc=0, ans=false, qOn=false, done=false;
+const TP=C.pages.en.length, TQ=C.questions.en.length, TS=TP+1;
+const L=()=>C.ui[lang], P=()=>C.pages[lang], Q=()=>C.questions[lang];
+const $=id=>document.getElementById(id);
+
+function setLang(l){
+  lang=l;
+  $('lEN').classList.toggle('on',l==='en');
+  $('lBM').classList.toggle('on',l==='bm');
+  $('hSub').textContent=L().sub;
+  if(done) refreshRes();
+  else if(qOn) refreshQUI();
+  else { buildProg(); renderPg(); }
+}
+
+function refreshQUI(){
+  $('qProg').textContent=L().qOf(qi+1,TQ);
+  $('qScore').textContent=L().sc(sc);
+  $('qNum').textContent=L().qN(qi+1);
+  $('qTxt').textContent=Q()[qi].q;
+  if(!ans){
+    const lt=['A','B','C','D'];
+    $('qOpts').innerHTML=Q()[qi].o.map((o,i)=>`<button class="opt" onclick="pick(${i})" id="o${i}"><span class="ol">${lt[i]}</span><span>${o}</span></button>`).join('');
+  }
+  const b=$('bNextQ');
+  if(!b.classList.contains('hidden')) b.textContent=qi===TQ-1?L().viewR:L().nextQ;
+}
+
+function refreshRes(){
+  const p=sc>=C.pass;
+  $('rMsg').textContent=p?L().granted:L().denied;
+  $('rDesc').textContent=p?L().passD(sc,TQ):L().failD(sc,TQ,C.pass);
+  if(p){ $('dlLabel').textContent=L().dlOpen; $('dlBtn').textContent=L().dlBtn; }
+  else { $('failLabel').textContent=L().dlLock; $('failDesc').innerHTML=L().failMore(C.pass); $('retryBtn').textContent=L().retry; }
+}
+
+function buildProg(){
+  const c=$('prog'); c.innerHTML='';
+  for(let i=0;i<TS;i++){
+    if(i>0){ const ln=document.createElement('div'); ln.className='line'; ln.id='ln'+i; c.appendChild(ln); }
+    const s=document.createElement('div'); s.className='prog-step';
+    const d=document.createElement('div'); d.className='dot'; d.id='d'+i; d.textContent=i<TP?(i+1):'?';
+    const lb=document.createElement('div'); lb.className='dot-label'; lb.textContent=i<TP?L().sL(i+1):L().qL;
+    s.appendChild(d); s.appendChild(lb); c.appendChild(s);
+  }
+  updProg();
+}
+
+function updProg(){
+  for(let i=0;i<TS;i++){
+    const d=$('d'+i); if(!d)return;
+    d.classList.remove('active','done');
+    if(i<pg){ d.classList.add('done'); d.textContent='✓'; }
+    else if(i===pg){ d.classList.add('active'); d.textContent=i<TP?(i+1):'?'; }
+    else d.textContent=i<TP?(i+1):'?';
+    if(i>0) $('ln'+i).classList.toggle('done',i<=pg);
+  }
+}
+
+function renderPg(){
+  const p=P()[pg];
+  $('pTag').textContent=p.tag; $('pTtl').textContent=p.title; $('pBody').innerHTML=p.content;
+  $('bPrev').textContent=L().back; $('bPrev').disabled=pg===0;
+  $('bNext').textContent=pg===TP-1?L().startQ:L().next;
+  const c=$('pCard'); c.style.animation='none'; c.offsetHeight; c.style.animation='slideUp .5s ease';
+  updProg();
+}
+
+function nextPage(){
+  if(pg<TP-1){ pg++; renderPg(); }
+  else { pg=TP; qOn=true; updProg(); $('tutSec').classList.add('hidden'); $('qSec').style.display='block'; renderQ(); }
+}
+function prevPage(){ if(pg>0){ pg--; renderPg(); } }
+
+function renderQ(){
+  const q=Q()[qi]; ans=false;
+  $('qProg').textContent=L().qOf(qi+1,TQ);
+  $('qScore').textContent=L().sc(sc);
+  $('qBar').style.width=`${(qi/TQ)*100}%`;
+  $('qNum').textContent=L().qN(qi+1);
+  $('qTxt').textContent=q.q;
+  const lt=['A','B','C','D'];
+  $('qOpts').innerHTML=q.o.map((o,i)=>`<button class="opt" onclick="pick(${i})" id="o${i}"><span class="ol">${lt[i]}</span><span>${o}</span></button>`).join('');
+  $('qFb').className='fb'; $('qFb').textContent='';
+  $('bNextQ').classList.add('hidden');
+  const a=$('qArea'); a.style.animation='none'; a.offsetHeight; a.style.animation='slideUp .4s ease';
+}
+
+function pick(i){
+  if(ans)return; ans=true;
+  const cor=Q()[qi].a, fb=$('qFb');
+  Q()[qi].o.forEach((_,j)=>$('o'+j).disabled=true);
+  $('o'+cor).classList.add('ok');
+  if(i===cor){ sc++; fb.className='fb ok'; fb.textContent=L().ok; }
+  else { $('o'+i).classList.add('no'); fb.className='fb no'; fb.textContent=L().no(Q()[qi].o[cor]); }
+  $('qScore').textContent=L().sc(sc);
+  const b=$('bNextQ'); b.classList.remove('hidden');
+  if(qi===TQ-1){ b.textContent=L().viewR; b.onclick=showRes; }
+  else { b.textContent=L().nextQ; b.onclick=nextQ; }
+}
+function nextQ(){ qi++; if(qi<TQ) renderQ(); }
+
+function showRes(){
+  done=true;
+  $('qSec').style.display='none'; $('rSec').style.display='block'; $('progWrap').classList.add('hidden');
+  const p=sc>=C.pass;
+  $('rScore').textContent=sc;
+  const ring=$('rFill'), circ=2*Math.PI*70, off=circ-(sc/TQ)*circ;
+  ring.classList.toggle('fail',!p);
+  setTimeout(()=>ring.style.strokeDashoffset=off,100);
+  if(p){
+    $('rMsg').textContent=L().granted; $('rMsg').style.color='var(--accent-green)';
+    $('rDesc').textContent=L().passD(sc,TQ);
+    $('dlBox').classList.remove('hidden'); $('failBox').classList.add('hidden');
+    $('dlLabel').textContent=L().dlOpen;
+    $('dlBtn').href=C.dlURL; $('dlBtn').textContent=L().dlBtn;
+  } else {
+    $('rMsg').textContent=L().denied; $('rMsg').style.color='var(--accent-red)';
+    $('rDesc').textContent=L().failD(sc,TQ,C.pass);
+    $('failBox').classList.remove('hidden'); $('dlBox').classList.add('hidden');
+    $('failLabel').textContent=L().dlLock;
+    $('failDesc').innerHTML=L().failMore(C.pass);
+    $('retryBtn').textContent=L().retry;
+  }
+}
+
+function resetAll(){
+  pg=0;qi=0;sc=0;ans=false;qOn=false;done=false;
+  $('rSec').style.display='none'; $('qSec').style.display='none';
+  $('tutSec').classList.remove('hidden'); $('progWrap').classList.remove('hidden');
+  $('dlBox').classList.add('hidden'); $('failBox').classList.add('hidden');
+  const r=$('rFill'); r.style.strokeDashoffset=440; r.classList.remove('fail');
+  buildProg(); renderPg();
+}
+
+buildProg(); renderPg();
+</script>
+</body>
+</html>
